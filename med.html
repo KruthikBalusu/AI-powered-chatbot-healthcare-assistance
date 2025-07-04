@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medicine Reminder</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      width: 350px;
+      text-align: center;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+    }
+
+    input[type="submit"] {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    #countdown {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Medicine Reminder</h2>
+    <form id="reminderForm">
+      <label for="medicine">Medicine Name:</label>
+      <input type="text" name="medicine" required>
+
+      <label for="date">Date:</label>
+      <input type="date" name="date" required>
+
+      <label for="time">Time:</label>
+      <input type="time" name="time" required>
+
+      <input type="submit" value="Set Reminder">
+    </form>
+    <div id="countdown"></div>
+  </div>
+
+  <script>
+    let reminderTime = null;
+    let reminderName = "";
+    let hasAlerted = false;
+
+    document.getElementById("reminderForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const medicine = document.querySelector("input[name='medicine']").value;
+      const date = document.querySelector("input[name='date']").value;
+      const time = document.querySelector("input[name='time']").value;
+
+      reminderTime = new Date(`${date}T${time}`);
+      reminderName = medicine;
+      hasAlerted = false;
+
+      alert(`✅ Reminder set for ${medicine} at ${time} on ${date}`);
+    });
+
+    function formatTimeLeft(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    setInterval(() => {
+      const countdown = document.getElementById("countdown");
+      if (!reminderTime) {
+        countdown.textContent = "";
+        return;
+      }
+
+      const now = new Date();
+      const diff = reminderTime - now;
+
+      if (diff > 0) {
+        countdown.textContent = `⏳ Time Left: ${formatTimeLeft(diff)}`;
+      } else {
+        countdown.textContent = `💊 It's time to take your medicine: ${reminderName}`;
+
+        if (!hasAlerted) {
+          alert(`💊 It's time to take your medicine: ${reminderName}`);
+          hasAlerted = true;
+          setTimeout(() => {
+            hasAlerted = false;
+          }, 60000); // reset alert flag after 1 minute
+        }
+      }
+    }, 1000); // update every second
+  </script>
+</body>
+</html>

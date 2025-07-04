@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Appointment Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      width: 400px;
+    }
+
+    label, select, input {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+    }
+
+    input[type="submit"] {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Book Appointment</h2>
+    <form id="appointmentForm">
+      <label for="disease">Select Disease:</label>
+      <select id="disease" required>
+        <option value="">--Select--</option>
+        <option value="Cardiology">Cardiology</option>
+        <option value="Dermatology">Dermatology</option>
+        <option value="Neurology">Neurology</option>
+      </select>
+
+      <label for="doctor">Available Doctor:</label>
+      <select id="doctor" required></select>
+
+      <label for="hospital">Nearby Hospital:</label>
+      <select id="hospital" required></select>
+
+      <label for="date">Date:</label>
+      <input type="date" id="date" required>
+
+      <label for="time">Time:</label>
+      <input type="time" id="time" required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" required>
+
+      <label for="phone">Phone:</label>
+      <input type="tel" id="phone" required>
+
+      <input type="submit" value="Book Appointment">
+    </form>
+    <div id="confirmation" style="margin-top:20px;"></div>
+  </div>
+
+  <script>
+    const doctorData = {
+      "Cardiology": ["Dr. A Sharma", "Dr. B Patel"],
+      "Dermatology": ["Dr. C Nair", "Dr. D Gupta"],
+      "Neurology": ["Dr. E Rao", "Dr. F Iyer"]
+    };
+
+    const hospitalData = {
+      "Cardiology": ["HeartCare Clinic", "City Cardio Center"],
+      "Dermatology": ["SkinGlow Hospital", "DermaClinic"],
+      "Neurology": ["NeuroLife Hospital", "BrainCare Center"]
+    };
+
+    const diseaseSelect = document.getElementById("disease");
+    const doctorSelect = document.getElementById("doctor");
+    const hospitalSelect = document.getElementById("hospital");
+
+    diseaseSelect.addEventListener("change", function () {
+      const selectedDisease = this.value;
+      doctorSelect.innerHTML = "";
+      hospitalSelect.innerHTML = "";
+
+      if (doctorData[selectedDisease]) {
+        doctorData[selectedDisease].forEach(doc => {
+          const opt = document.createElement("option");
+          opt.value = doc;
+          opt.textContent = doc;
+          doctorSelect.appendChild(opt);
+        });
+      }
+
+      if (hospitalData[selectedDisease]) {
+        hospitalData[selectedDisease].forEach(hosp => {
+          const opt = document.createElement("option");
+          opt.value = hosp;
+          opt.textContent = hosp;
+          hospitalSelect.appendChild(opt);
+        });
+      }
+    });
+
+    document.getElementById("appointmentForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const disease = diseaseSelect.value;
+      const doctor = doctorSelect.value;
+      const hospital = hospitalSelect.value;
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+
+      const confirmation = document.getElementById("confirmation");
+      const appointmentDateTime = new Date(`${date}T${time}`);
+
+      confirmation.innerHTML = `
+        <p>✅ Appointment Booked!</p>
+        <p><strong>Disease:</strong> ${disease}</p>
+        <p><strong>Doctor:</strong> ${doctor}</p>
+        <p><strong>Hospital:</strong> ${hospital}</p>
+        <p><strong>Date:</strong> ${date}</p>
+        <p><strong>Time:</strong> ${time}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p id="reminder"><strong>⏳ Time Left: </strong><span id="countdown">Calculating...</span></p>
+      `;
+
+      const countdownEl = document.getElementById("countdown");
+
+      function updateCountdown() {
+        const now = new Date();
+        const diff = appointmentDateTime - now;
+
+        if (diff <= 0) {
+          countdownEl.textContent = "⏰ It's time for your appointment!";
+          clearInterval(timer);
+          alert("⏰ Reminder: It's time for your appointment with " + doctor + " at " + hospital + "!");
+
+          // Optional: Browser Notification
+          if (Notification.permission === "granted") {
+            new Notification("Appointment Reminder", {
+              body: `Time for your appointment with ${doctor} at ${hospital}!`,
+              icon: "https://cdn-icons-png.flaticon.com/512/2598/2598711.png"
+            });
+          }
+          return;
+        }
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        countdownEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      updateCountdown();
+      const timer = setInterval(updateCountdown, 1000);
+
+      // Ask Notification permission
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+    });
+  </script>
+</body>
+</html>

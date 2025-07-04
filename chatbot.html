@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat with MediBOT</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      height: 400px;
+      overflow-y: auto;
+    }
+
+    .chat-message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #333;
+      text-align: left;
+      white-space: pre-line;
+    }
+
+    .chatbot-response {
+      background-color: #00c9ff;
+      color: black;
+    }
+
+    .user-message {
+      background-color: #3a86ff;
+      color: white;
+    }
+
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #00c9ff;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    button:hover {
+      background: #3a86ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to MediBOT</h1>
+
+  <div class="chat-container" id="chatContainer">
+    <!-- Chat messages will appear here -->
+  </div>
+
+  <div>
+    <input type="text" id="userInput" placeholder="Ask me a health-related question..." />
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="startVoiceRecognition()">🎤 Voice</button>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chatContainer');
+    const userInputField = document.getElementById('userInput');
+
+    function appendMessage(message, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('chat-message', sender);
+      messageDiv.textContent = message;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US'; // You can customize this based on user language
+      synth.speak(utterance);
+    }
+
+    function sendMessage() {
+      const userQuery = userInputField.value.trim();
+      if (!userQuery) return;
+
+      appendMessage(userQuery, 'user-message');
+      userInputField.value = "";
+
+      fetch('http://127.0.0.1:5000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: userQuery })
+      })
+      .then(res => res.json())
+      .then(data => {
+        appendMessage(data.answer, 'chatbot-response');
+        speak(data.answer);  // 🔊 Speak the bot's answer
+
+        if (data.doctors && data.doctors.length > 0) {
+          let doctorMessage = "👨‍⚕️ Doctor Suggestions:\n";
+          data.doctors.forEach(doc => {
+            doctorMessage += `• ${doc}\n`;
+          });
+          appendMessage(doctorMessage, 'chatbot-response');
+          speak(doctorMessage);  // 🔊 Speak doctor suggestions
+        }
+      })
+      .catch(error => console.error("Error:", error));
+    }
+
+    function startVoiceRecognition() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Your browser doesn't support voice recognition.");
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function(event) {
+        const voiceText = event.results[0][0].transcript;
+        userInputField.value = voiceText;
+        sendMessage();
+      };
+
+      recognition.onerror = function(event) {
+        console.error("Speech recognition error:", event.error);
+      };
+
+      recognition.start();
+    }
+  </script>
+</body>
+</html>

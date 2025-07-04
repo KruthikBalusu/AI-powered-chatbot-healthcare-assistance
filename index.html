@@ -1,0 +1,132 @@
+=<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to MediBOT</title>
+  <style> 
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .toggle-section {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    .info, .images {
+      position: absolute;
+      width: 100%;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .images img {
+      width: 150px;
+      margin: 0 15px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .info p {
+      font-size: 1.2em;
+      margin: 20px;
+    }
+
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1em;
+      border: none;
+      background: #00c9ff;
+      color: #000;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-top: 30px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #3a86ff;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to MediBOT</h1>
+
+  <div class="toggle-section">
+    <div class="images visible" id="imageBlock">
+      <img src="https://cdn-icons-png.flaticon.com/512/3771/3771518.png" alt="AI Chatbot">
+      <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Doctor">
+    </div>
+    <div class="info hidden" id="infoBlock">
+      <p>🤖 Chat with AI: Get answers to health-related questions</p>
+      <p>🕒 Book Appointments: Find doctors based on your symptoms</p>
+      <p>💊 Medicine Reminders: Never miss a tablet with alerts</p>
+    </div>
+  </div>
+
+  <button onclick="location.href='features.html'">Get Started</button>
+
+
+  <script>
+    let isShowingImages = true;
+
+    setInterval(() => {
+      const images = document.getElementById("imageBlock");
+      const info = document.getElementById("infoBlock");
+      if (isShowingImages) {
+        images.classList.remove("visible");
+        images.classList.add("hidden");
+        info.classList.remove("hidden");
+        info.classList.add("visible");
+      } else {
+        images.classList.remove("hidden");
+        images.classList.add("visible");
+        info.classList.remove("visible");
+        info.classList.add("hidden");
+      }
+      isShowingImages = !isShowingImages;
+    }, 10000); // 10 seconds
+  </script>
+</body>
+</html>
